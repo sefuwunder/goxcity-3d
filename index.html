@@ -889,7 +889,7 @@
   function addCrates3(x,y,z){var c={side:'#9b6037',dark:'#68442f',light:'#ba7a42',top:'#d2a05a',edge:'#46342a'};box3(x-.13,y,z,.22,.22,.2,c);box3(x+.14,y+.05,z,.19,.19,.16,c);}
   function addWheel3(x,y,z,p){box3(x,y,z-.63,.08,.08,1.26,slabPalette(p.wood,p.edge));box3(x-.63,y,z-.02,1.26,.08,.08,slabPalette(p.wood,p.edge));box3(x,y,z-.03,.18,.16,.18,slabPalette(p.trim,p.edge));}
   function addWaterBuilding3(x,y,z,v,type){var p=buildingStyle(v),wood={side:'#8a603e',dark:'#513a2f',light:'#b17b4c',top:'#c99b5e',edge:'#372f2a'};flatQuad(x,y,z+.02,1.36,1.02,'rgba(62,137,142,.84)','#b7ddd1');for(var q=-.42;q<=.42;q+=.28)box3(x+q,y,z-.26,.055,.055,.74,wood);box3(x,y,z+.12,1.12,.72,.16,wood);styledShell(x,y,z+.28,v,type==='ferry'?1.0:.88,.58,.72,'gable',true);if(type==='fishery'){box3(x+.48,y-.18,z+.3,.06,.06,.82,wood);box3(x+.18,y-.18,z+.3,.06,.06,.82,wood);box3(x+.33,y-.18,z+1.03,.42,.07,.06,wood);addCrates3(x-.42,y+.18,z+.3);}else if(type==='ferry'){roadQuad([x-.72,y+.25],[x+.7,y+.25],z+.3,'#d0aa6b',.18);addFlag3(x+.42,y-.18,z+.35,p);}else{box3(x-.46,y+.12,z+.34,.24,.18,.16,slabPalette(p.accent,p.edge));}return;}
-  function addBuilding(x,y,z,v,type){
+  function emitBuilding(x,y,z,v,type){
     var p=buildingStyle(v),age=Math.min(3,Math.floor(v.age/2)+1),base=z+.05,hearth=v.player===0;
     if(type==='park'){flatQuad(x,y,base,1.34,1.24,hearth?'#66935a':'#5f9270','#3e5d42');roadQuad([x-.58,y+.42],[x+.55,y-.38],base+.025,p.stone,.14);addTree(x-.34,y-.1,base+.02,v.seed);addTree(x+.34,y+.13,base+.02,v.seed+1);box3(x,y,base+.02,.27,.27,.16,{side:'#5c7770',dark:'#425a55',light:'#789890',top:'#b9d5c3',edge:'#3d4d48'});pyramidRoof(x,y,base+.18,.18,.18,.18,'#79b9b2','#b8ded0');return;}
     if(!reviewMode&&terrain[y|0]&&terrain[y|0][x|0]==='wetland'){addWaterBuilding3(x,y,z,v,type);return;}
@@ -917,6 +917,66 @@
     if(type==='lawyer'){styledShell(x,y,base,v,.9,.62,1.72,'hip',true);box3(x+.42,y+.28,base+.72,.055,.055,.72,slabPalette(p.wood,p.edge));box3(x+.42,y+.28,base+1.33,.52,.07,.07,slabPalette(p.wood,p.edge));pyramidRoof(x+.17,y+.28,base+1.06,.3,.16,.18,'#d5ba68','#d5ba68');pyramidRoof(x+.67,y+.28,base+1.06,.3,.16,.18,'#d5ba68','#d5ba68');return;}
     if(type==='botanica'){styledShell(x,y,base,v,1.0,.66,.9,'hip',true);pyramidRoof(x,y,base+.9,1.12,.78,.32,'#3d714d','#5d9360');[-.42,-.14,.14,.42].forEach(function(dx,i){box3(x+dx,y+.39,base+.02,.18,.15,.16,slabPalette(i%2?'#7b5135':'#a46c3f',p.edge));box3(x+dx,y+.39,base+.18,.09,.09,.25,slabPalette(i%2?'#6b9d50':'#4e824e',p.edge));});box3(x+.3,y-.24,base+.88,.38,.08,.32,slabPalette(p.green,p.trim));return;}
     styledShell(x,y,base,v,.78,.58,.9,'hip',true);
+  }
+  function addLantern3(x,y,z,p){
+    box3(x,y,z,.045,.045,.42,slabPalette(p.wood,p.edge));
+    box3(x,y,z+.4,.13,.13,.16,{side:p.glass,dark:p.edge,light:p.trim,top:p.trim,edge:p.edge});
+    pyramidRoof(x,y,z+.56,.18,.18,.12,p.roof,p.roof2);
+  }
+  function addArchitectureFlair3(x,y,z,v,type){
+    if(renderDetail===0)return;
+    var p=buildingStyle(v),hearth=v.player===0,base=z+.07,front=y+.4;
+    var homes={house:1,villa:1,farmstead:1},civic={center:1,plaza:1,spiritual:1,library:1,hospital:1,playhouse:1,lawyer:1},trade={market:1,agency:1,depot:1,bakery:1,smithy:1,apothecary:1,inn:1,art:1,yoga:1,botanica:1},rural={commune:1,mill:1,fishery:1,ferry:1};
+    if(type==='park'){
+      box3(x-.42,y+.33,base,.42,.1,.1,slabPalette(p.wood,p.edge));box3(x-.55,y+.33,base-.06,.05,.08,.18,slabPalette(p.wood,p.edge));box3(x-.29,y+.33,base-.06,.05,.08,.18,slabPalette(p.wood,p.edge));
+      addLantern3(x+.43,y+.3,base,p);return;
+    }
+    if(homes[type]){
+      /* Deep balconies, paired posts, shutters and flower boxes give even the
+         smallest homes a readable street face without filling the whole plot. */
+      box3(x,y+.34,base+.48,.54,.14,.08,slabPalette(p.trim,p.edge));
+      box3(x-.22,y+.36,base,.055,.055,.5,slabPalette(p.stone,p.edge));box3(x+.22,y+.36,base,.055,.055,.5,slabPalette(p.stone,p.edge));
+      box3(x,y+.43,base+.58,.5,.045,.15,slabPalette(hearth?p.green:p.accent,p.edge));
+      box3(x-.34,y-.2,base+.72,.16,.16,.58,{side:p.dark,dark:p.edge,light:p.side,top:p.trim,edge:p.edge});
+      if(renderDetail>1){box3(x-.29,y+.43,base+.64,.16,.11,.09,slabPalette('#497b50',p.edge));box3(x+.29,y+.43,base+.64,.16,.11,.09,slabPalette('#bf6b48',p.edge));}
+      return;
+    }
+    if(civic[type]){
+      /* Civic façades get a shallow arcade, a contrasting cornice and lamps;
+         Hearth reads Italianate while Harbor keeps its tiled, fortified trim. */
+      box3(x,front,base+.74,.78,.16,.1,slabPalette(p.trim,p.edge));
+      [-.3,0,.3].forEach(function(dx){box3(x+dx,front,base,.075,.075,.76,slabPalette(p.stone,p.edge));});
+      box3(x,front+.015,base+.34,.62,.05,.09,slabPalette(hearth?p.roof2:p.accent,p.edge));
+      if(renderDetail>1){addLantern3(x-.48,y+.31,base,p);addLantern3(x+.48,y+.31,base,p);}
+      return;
+    }
+    if(trade[type]){
+      var awning=hearth?p.roof2:p.accent;
+      box3(x,front,base+.55,.72,.22,.1,slabPalette(awning,p.trim));
+      [-.27,0,.27].forEach(function(dx,i){box3(x+dx,front+.03,base+.46,.19,.23,.08,slabPalette(i%2?p.trim:awning,p.edge));});
+      box3(x+.42,y+.31,base+.38,.055,.055,.64,slabPalette(p.wood,p.edge));
+      box3(x+.42,y+.31,base+.82,.28,.06,.22,slabPalette(p.accent,p.trim));
+      if(renderDetail>1){box3(x-.38,y+.38,base,.18,.16,.14,slabPalette('#9a603d',p.edge));box3(x-.38,y+.38,base+.14,.08,.08,.23,slabPalette(p.green,p.edge));}
+      return;
+    }
+    if(rural[type]){
+      [-.5,-.25,0,.25,.5].forEach(function(dx){box3(x+dx,y+.45,base-.02,.045,.045,.28,slabPalette(p.wood,p.edge));});
+      roadQuad([x-.53,y+.45],[x+.53,y+.45],base+.18,p.wood,.05);addCrates3(x+.35,y+.3,base);
+      if(renderDetail>1)addFlag3(x-.38,y+.18,base,p);return;
+    }
+    /* A small roof crest keeps ungrouped specialty models legible in profile. */
+    box3(x,y-.18,base+.88,.055,.055,.44,slabPalette(p.trim,p.edge));
+    pyramidRoof(x,y-.18,base+1.28,.2,.2,.16,hearth?p.roof2:p.accent,p.trim);
+  }
+  function addBuilding(x,y,z,v,type){
+    var target=faceTarget||faces3,start=target.length,origin=z+.05;
+    emitBuilding(x,y,z,v,type);
+    addArchitectureFlair3(x,y,z,v,type);
+    /* Buildings occupy only the inner two-thirds of a plot. Streets, rural
+       links and tile edges remain visible between even fully developed units. */
+    for(var i=start;i<target.length;i++)for(var j=0;j<target[i].vertices.length;j++){
+      var point=target[i].vertices[j];point[0]=x+(point[0]-x)*.64;point[1]=y+(point[1]-y)*.64;point[2]=origin+(point[2]-origin)*.84;
+    }
   }
   function addTerrain(sea){
     for(var y=0;y<N;y++)for(var x=0;x<N;x++){
